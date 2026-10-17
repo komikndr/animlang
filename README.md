@@ -16,9 +16,7 @@ Restart your harness after it installs the skill. Then describe the animation yo
 
 ### npm setup
 
-The npm package is currently a placeholder (`0.0.0-stage`). Use the Git installation until the full CLI release is available.
-
-After the full release, install the project skill with:
+Animlang is available on [npm](https://www.npmjs.com/package/animlang). Install the project skill with:
 
 ```sh
 npx animlang@latest setup . --harness opencode
