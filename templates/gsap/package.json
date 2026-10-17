@@ -1,0 +1,6 @@
+{
+  "name": "animlang-gsap-scene",
+  "private": true,
+  "type": "module",
+  "dependencies": { "gsap": "3.15.0" }
+}

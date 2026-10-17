@@ -1,0 +1,6 @@
+{
+  "name": "animlang-vanta-scene",
+  "private": true,
+  "type": "module",
+  "dependencies": { "vanta": "0.5.24", "three-vanta": "npm:three@0.134.0" }
+}

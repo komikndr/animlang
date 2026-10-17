@@ -1,0 +1,19 @@
+{
+  "name": "animlang",
+  "version": "0.1.0",
+  "description": "Native animation projects, frame inspection, and MP4 export for coding agents.",
+  "type": "module",
+  "bin": { "animlang": "./src/cli.js" },
+  "files": ["src", "templates", ".opencode/skills/animlang", "README.md"],
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:integration": "node --test test/integration/*.test.js",
+    "check": "node --check src/cli.js && node --check src/browser.js && node --check src/commands.js && node --check src/manim.js && node --check src/media.js && node --check src/project.js"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "playwright": "1.64.1",
+    "vite": "^8.3.4"
+  }
+}

@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+body { background: #0c1220; color: #edf3ff; font-family: Arial, sans-serif; }
+#stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+.eyebrow { color: #86a1c2; font-size: 1.8vmin; letter-spacing: .3em; text-transform: uppercase; }
+header { position: absolute; top: 8%; left: 7%; z-index: 2; }
+h1 { margin: 1.8vmin 0; font-size: 5.4vmin; letter-spacing: -.04em; font-weight: 600; }
+.subtitle { color: #a4b6cf; font-size: 2.3vmin; line-height: 1.5; }
+.caption { position: absolute; bottom: 7%; left: 7%; right: 7%; padding-top: 2.5vmin; border-top: 1px solid #26364c; color: #c6d6ed; font-size: 2.5vmin; z-index: 2; }
+.badge { position: absolute; top: 9%; right: 7%; color: #6fe3c4; font-size: 1.7vmin; letter-spacing: .14em; z-index: 2; }
+canvas { display: block; }
