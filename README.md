@@ -1,4 +1,4 @@
-# animlang
+# AnimLang
 
 Create animations with your coding agent. Describe what you want, inspect the frames, and export an MP4.
 
@@ -18,19 +18,19 @@ Restart your harness after it installs the skill. Then describe the animation yo
 
 ### GSAP
 
-[Watch the video](output/demos/qwen-architecture.mp4)
+https://github.com/user-attachments/assets/e76d745d-6c8a-4fa5-ae2c-f131d655b137
 
-> **Prompt:** "Animate the Qwen architecture with camera zooms into its layers and matrix operations."
+> **Prompt:** "Animate the Qwen 3.8 Flash Next architecture with camera zooms into its layers and do matrix operations for every layres."
 
 ### Three.js
 
-[Watch the video](output/demos/qkv-cyberpunk.mp4)
+https://github.com/user-attachments/assets/ab0edcf2-f1f5-4312-83b6-aa562e6416c2
 
-> **Prompt:** "Show Q, K, and V projections in 3D with a futuristic cyberpunk style."
+> **Prompt:** "Show Q, K, and V projections matmul in 3D with a futuristic cyberpunk style."
 
 ### Manim
 
-[Watch the video](output/demos/manim-qkv-stack.mp4)
+https://github.com/user-attachments/assets/3abadb36-457c-4a4e-8c52-020cfdebc064
 
 > **Prompt:** "Animate matrix multiplication, then combine the results into a 3D stack in a 3Blue1Brown-inspired style."
 
