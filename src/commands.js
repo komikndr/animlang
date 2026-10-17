@@ -7,17 +7,28 @@ import { clipVideo, encodeFrames, extractFrame, ffmpeg, ffprobe, frameName, prob
 import { exists, inspectTimes, loadProject, renderRange, writeJson } from './project.js';
 import { requireValue } from './errors.js';
 import { run } from './process.js';
+import { checkFrameLimit, checkProjectLimits, startJob, watchTemporary } from './limits.js';
 
 export async function inspectProject(directory, options = {}) {
+  const job = startJob(options);
+  try { return await inspect(directory, job.options); }
+  finally { job.close(); }
+}
+
+async function inspect(directory, options) {
   const project = await loadProject(directory);
+  checkProjectLimits(project);
   const source = project.engine === 'manim' ? await renderManim(project, options) : await openBrowserScene(project, options);
   let output;
   let successful = false;
+  let budget;
   try {
     const times = inspectTimes(options.at, source.duration);
+    checkFrameLimit(times.length, options);
     const parent = path.join(project.root, 'output');
     await mkdir(parent, { recursive: true });
     output = await mkdtemp(path.join(parent, 'inspect-'));
+    budget = watchTemporary(output, options);
     const frames = [];
     for (const [index, time] of times.entries()) {
       const file = path.join(output, frameName(index));
@@ -25,8 +36,9 @@ export async function inspectProject(directory, options = {}) {
       const actualTime = project.engine === 'manim'
         ? Math.min(Math.floor((time + 1e-9) * source.fps), (source.frames ?? Math.round(source.duration * source.fps)) - 1) / source.fps
         : time;
-      if (project.engine === 'manim') await extractFrame(source.file, actualTime, file);
+      if (project.engine === 'manim') await extractFrame(source.file, actualTime, file, budget.options);
       else await source.capture(time, file);
+      await budget.check();
       frames.push({ time, actualTime, file });
     }
     const result = { command: 'inspect', project: project.root, engine: project.engine,
@@ -36,12 +48,22 @@ export async function inspectProject(directory, options = {}) {
     return result;
   } finally {
     try { await source.close(); }
-    finally { if (!successful && output) await rm(output, { recursive: true, force: true }); }
+    finally {
+      await budget?.close();
+      if (!successful && output) await rm(output, { recursive: true, force: true });
+    }
   }
 }
 
 export async function renderProject(directory, options = {}) {
+  const job = startJob(options);
+  try { return await render(directory, job.options); }
+  finally { job.close(); }
+}
+
+async function render(directory, options) {
   const project = await loadProject(directory);
+  checkProjectLimits(project);
   const parent = options.output ? path.dirname(path.resolve(options.output)) : path.join(project.root, 'output');
   if (options.output) {
     requireValue(path.extname(options.output).toLowerCase() === '.mp4', 'INVALID_OUTPUT', 'Use an .mp4 output file.');
@@ -49,32 +71,37 @@ export async function renderProject(directory, options = {}) {
   }
   await mkdir(parent, { recursive: true });
   // Fail before a long capture if the encoder is not installed.
-  await run(ffmpeg(), ['-version'], { timeout: 10000 });
-  await run(ffprobe(), ['-version'], { timeout: 10000 });
+  await run(ffmpeg(), ['-version'], { timeout: 10000, signal: options.signal });
+  await run(ffprobe(), ['-version'], { timeout: 10000, signal: options.signal });
   const temporary = await mkdtemp(path.join(parent, '.animlang-'));
+  const budget = watchTemporary(temporary, options);
+  options = budget.options;
   let source;
   try {
     source = project.engine === 'manim' ? await renderManim(project, options) : await openBrowserScene(project, options);
     const range = renderRange(options, source.duration, project.fps);
+    checkFrameLimit(range.frames, options);
     const video = path.join(temporary, 'render.mp4');
     if (project.engine === 'manim') {
       if (range.from === 0 && range.to === source.duration) await copyFile(source.file, video, constants.COPYFILE_EXCL);
-      else await clipVideo(source.file, range, project.fps, video);
+      else await clipVideo(source.file, range, project.fps, video, options);
     } else {
       for (let frame = 0; frame < range.frames; frame++) {
         await source.capture(range.from + frame / project.fps, path.join(temporary, frameName(frame)));
+        await budget.check();
       }
       await source.close();
       source = undefined;
-      await encodeFrames(temporary, project.fps, range.frames, video);
+      await encodeFrames(temporary, project.fps, range.frames, video, options);
     }
-    const metadata = await probeVideo(video);
+    await budget.check();
+    const metadata = await probeVideo(video, options);
     const file = options.output ? path.resolve(options.output) : path.join(parent, `render-${path.basename(temporary).slice('.animlang-'.length)}.mp4`);
     await copyFile(video, file, constants.COPYFILE_EXCL);
     return { command: 'render', project: project.root, engine: project.engine, file, from: range.from, to: range.to, ...metadata };
   } finally {
     try { await source?.close(); }
-    finally { await rm(temporary, { recursive: true, force: true }); }
+    finally { await budget.close(); await rm(temporary, { recursive: true, force: true }); }
   }
 }
 
@@ -89,7 +116,7 @@ export async function doctor() {
   const { chromium } = await import('playwright');
   let browser;
   try {
-    browser = await chromium.launch({ executablePath: process.env.ANIMLANG_CHROMIUM_PATH });
+    browser = await chromium.launch({ executablePath: process.env.ANIMLANG_CHROMIUM_PATH, chromiumSandbox: true, timeout: 10000 });
     checks.push({ name: 'chromium', ok: true, version: browser.version() });
   } catch (error) { checks.push({ name: 'chromium', ok: false, error: 'Run npx playwright install chromium, or set ANIMLANG_CHROMIUM_PATH.', details: error.message }); }
   finally { await browser?.close(); }

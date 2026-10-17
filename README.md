@@ -10,9 +10,22 @@ Supports GSAP, Three.js, Vanta, and Manim through your existing agent harness.
 
 Ask your agent:
 
-> Install animlang from this repository, install its dependencies, and add the animlang skill to my harness.
+> Install animlang from https://github.com/komikndr/animlang, install its dependencies, and add the animlang skill to my harness.
 
 Restart your harness after it installs the skill. Then describe the animation you want.
+
+### npm setup
+
+The npm package is currently a placeholder (`0.0.0-stage`). Use the Git installation until the full CLI release is available.
+
+After the full release, install the project skill with:
+
+```sh
+npx animlang@latest setup . --harness opencode
+```
+
+Use `--harness claude` or `--harness agents` for other skill directories. Restart your harness after installation.
+The skill gives your agent the scene workflow. The CLI creates projects, captures frames, and exports video.
 
 ## Video examples
 
@@ -20,7 +33,7 @@ Restart your harness after it installs the skill. Then describe the animation yo
 
 https://github.com/user-attachments/assets/e76d745d-6c8a-4fa5-ae2c-f131d655b137
 
-> **Prompt:** "Animate the Qwen 3.8 Flash Next architecture with camera zooms into its layers and do matrix operations for every layres."
+> **Prompt:** "Animate the Qwen 3.8 Flash Next architecture. Zoom into the embedding, GDN, QSA, LM head, and MTP layers, and show matrix operations."
 
 ### Three.js
 
@@ -34,7 +47,7 @@ https://github.com/user-attachments/assets/3abadb36-457c-4a4e-8c52-020cfdebc064
 
 > **Prompt:** "Animate matrix multiplication, then combine the results into a 3D stack in a 3Blue1Brown-inspired style."
 
-The video links point to local exports. Scene sources are in [`examples/`](examples/).
+Scene sources are in [`examples/`](examples/).
 
 ## Manual setup
 
@@ -62,6 +75,9 @@ node src/cli.js render demo --output demo/output/demo.mp4
 
 Templates: `gsap`, `three`, `vanta`, and `manim`.
 The [agent skill](.opencode/skills/animlang/SKILL.md) contains the scene workflow and rendering instructions.
+
+Browser capture uses Chromium's sandbox and restricts local assets and network requests.
+See [capture security](SECURITY.md) for shared asset flags, resource limits, and native-code execution boundaries.
 
 ## Development
 

@@ -28,7 +28,8 @@ for(const [name,times] of [
       const score=result.stderr.match(/average:([\d.]+|inf)/)?.[1];
       assert.ok(score==='inf'||Number(score)>=65,`${message}: PSNR ${score} dB`);
     };
-    const scene=await openBrowserScene(project);
+    const options={allowDirectory:[path.join(packageRoot,'examples/shared')]};
+    const scene=await openBrowserScene(project,options);
     try {
       for(const [index,time] of times.entries()) {
         const file=path.join(output,`${index}.png`);
@@ -37,7 +38,7 @@ for(const [name,times] of [
     } finally {await scene.close();}
     await equivalent(path.join(output,'0.png'),path.join(output,'5.png'),'a reverse seek must reproduce the same frame');
     await equivalent(path.join(output,'1.png'),path.join(output,'6.png'),'zero must reset camera, highlights, and visible objects');
-    const fresh=await openBrowserScene(project);
+    const fresh=await openBrowserScene(project,options);
     try {
       const file=path.join(output,'fresh.png');await fresh.capture(times[0],file);
       await equivalent(path.join(output,'0.png'),file,'a fresh session must match the same timestamp');

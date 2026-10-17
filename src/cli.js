@@ -13,7 +13,12 @@ const output = result => { console.log(JSON.stringify(result, null, 2)); };
 const captureOptions = command => command
   .option('--browser <path>', 'Chromium executable path')
   .option('--python <path>', 'Python executable for Manim')
-  .option('--timeout <ms>', 'Browser readiness and frame timeout', '30000');
+  .option('--timeout <ms>', 'Host-side browser readiness and frame timeout', '30000')
+  .option('--job-timeout <ms>', 'Overall inspection or render deadline', '1800000')
+  .option('--max-frames <count>', 'Maximum captured frames', '18000')
+  .option('--max-temp-mb <size>', 'Maximum temporary output per directory in MiB', '2048')
+  .option('--allow-origin <origin>', 'Allow an additional HTTP(S) origin (repeatable)', (value, all) => [...all, value], [])
+  .option('--allow-directory <path>', 'Allow an additional local asset directory (repeatable)', (value, all) => [...all, value], []);
 
 program.command('init').argument('<directory>', 'New or empty project directory')
   .option('-t, --template <name>', 'gsap, three, vanta, or manim', 'gsap')
