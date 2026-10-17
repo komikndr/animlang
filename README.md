@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/e76d745d-6c8a-4fa5-ae2c-f131d655b137
 
 ### Three.js
 
-https://github.com/user-attachments/assets/ab0edcf2-f1f5-4312-83b6-aa562e6416c2
+https://github.com/user-attachments/assets/8b5d3598-cfc2-45cd-be22-86d722e5f161
 
 > **Prompt:** "Show Q, K, and V projections matmul in 3D with a futuristic cyberpunk style."
 
