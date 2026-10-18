@@ -1,6 +1,6 @@
 {
   "name": "animlang",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Native animation projects, frame inspection, and MP4 export for coding agents.",
   "type": "module",
   "bin": {
@@ -9,7 +9,7 @@
   "files": [
     "src",
     "templates",
-    ".opencode/skills/animlang",
+    "skills",
     "README.md",
     "SECURITY.md"
   ],

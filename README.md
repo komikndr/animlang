@@ -72,7 +72,7 @@ node src/cli.js render demo --output demo/output/demo.mp4
 ```
 
 Templates: `gsap`, `three`, `vanta`, and `manim`.
-The [agent skill](.opencode/skills/animlang/SKILL.md) contains the scene workflow and rendering instructions.
+The [agent skill](skills/animlang/SKILL.md) contains the scene workflow and rendering instructions.
 
 Browser capture uses Chromium's sandbox and restricts local assets and network requests.
 See [capture security](SECURITY.md) for shared asset flags, resource limits, and native-code execution boundaries.

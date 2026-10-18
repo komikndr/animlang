@@ -16,6 +16,16 @@ export async function writeJson(file, value) {
   await writeFile(file, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
 }
 
+async function copyTemplateContents(source, target) {
+  // Copy entries rather than the existing root directory. Node 22.22+
+  // rejects an existing destination directory with errorOnExist enabled.
+  for (const entry of await readdir(source)) {
+    await cp(path.join(source, entry), path.join(target, entry), {
+      recursive: true, force: false, errorOnExist: true,
+    });
+  }
+}
+
 export async function initProject(directory, template) {
   requireValue(templates.includes(template), 'INVALID_TEMPLATE', `Choose a template: ${templates.join(', ')}.`);
   const root = path.resolve(directory);
@@ -25,9 +35,9 @@ export async function initProject(directory, template) {
   }
   await mkdir(root, { recursive: true });
   if (template !== 'manim') {
-    await cp(path.join(packageRoot, 'templates/browser'), root, { recursive: true, force: false, errorOnExist: true });
+    await copyTemplateContents(path.join(packageRoot, 'templates/browser'), root);
   }
-  await cp(path.join(packageRoot, 'templates', template), root, { recursive: true, force: false, errorOnExist: true });
+  await copyTemplateContents(path.join(packageRoot, 'templates', template), root);
   await writeFile(path.join(root, '.gitignore'), 'node_modules/\noutput/\n.venv/\n__pycache__/\nmedia/\n', { flag: 'wx' });
   return {
     command: 'init', project: root, template,
@@ -96,7 +106,7 @@ export async function setupSkill(directory, harness, force = false) {
   const folders = { opencode: '.opencode', claude: '.claude', agents: '.agents' };
   requireValue(Object.hasOwn(folders, harness), 'INVALID_HARNESS', 'Choose opencode, claude, or agents.');
   const root = path.resolve(directory);
-  const source = path.join(packageRoot, '.opencode/skills/animlang/SKILL.md');
+  const source = path.join(packageRoot, 'skills/animlang/SKILL.md');
   const target = path.join(root, folders[harness], 'skills/animlang/SKILL.md');
   if (await exists(target)) {
     if (await readFile(target, 'utf8') === await readFile(source, 'utf8')) {

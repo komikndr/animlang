@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { initProject, inspectTimes, loadProject, parseTimes, renderRange, setupSkill } from '../src/project.js';
+import { initProject, inspectTimes, loadProject, packageRoot, parseTimes, renderRange, setupSkill, templates } from '../src/project.js';
 import { run } from '../src/process.js';
 
 async function fixture(t) {
@@ -19,6 +19,31 @@ test('initialization preserves an existing file and refuses unknown templates', 
   assert.equal(await readFile(path.join(root, 'user.txt'), 'utf8'), 'keep me');
   await assert.rejects(initProject(path.join(root, 'new'), 'unknown'), { code: 'INVALID_TEMPLATE' });
 });
+
+for (const template of templates) {
+  test(`${template}: initialization works in new, empty, and Git-only directories`, async t => {
+    const root = await fixture(t);
+    for (const state of ['new', 'empty', 'git']) {
+      const project = path.join(root, state);
+      if (state !== 'new') await mkdir(project);
+      if (state === 'git') {
+        await mkdir(path.join(project, '.git'));
+        await writeFile(path.join(project, '.git', 'HEAD'), 'preserve Git metadata');
+      }
+      await initProject(project, template);
+      const sourceDirectories = template === 'manim' ? [template] : ['browser', template];
+      for (const name of sourceDirectories) {
+        const source = path.join(packageRoot, 'templates', name);
+        for (const entry of await readdir(source)) {
+          assert.deepEqual(await readFile(path.join(project, entry)), await readFile(path.join(source, entry)));
+        }
+      }
+      await loadProject(project);
+      if (state === 'git') assert.equal(await readFile(path.join(project, '.git', 'HEAD'), 'utf8'), 'preserve Git metadata');
+      await assert.rejects(initProject(project, template), { code: 'DIRECTORY_NOT_EMPTY' });
+    }
+  });
+}
 
 test('configuration rejects invalid values and entry paths outside the project', async t => {
   const root = await fixture(t);
@@ -58,12 +83,14 @@ test('skill setup is idempotent and preserves an edited skill', async t => {
   const root = await fixture(t);
   const first = await setupSkill(root, 'opencode');
   assert.equal(first.status, 'installed');
+  assert.equal(await readFile(first.file, 'utf8'), await readFile(path.join(packageRoot, 'skills/animlang/SKILL.md'), 'utf8'));
   assert.equal((await setupSkill(root, 'opencode')).status, 'current');
   await writeFile(first.file, 'user edits');
   await assert.rejects(setupSkill(root, 'opencode'), { code: 'FILE_EXISTS' });
   assert.equal(await readFile(first.file, 'utf8'), 'user edits');
   assert.equal((await setupSkill(root, 'opencode', true)).status, 'installed');
   assert.equal((await setupSkill(root, 'agents')).status, 'installed');
+  assert.equal((await setupSkill(root, 'claude')).status, 'installed');
 });
 
 test('CLI reports invalid timestamps as JSON and exits nonzero', async () => {
